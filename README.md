@@ -98,3 +98,32 @@ Claude Desktop에서 사용하려면 다음과 같이 설정하세요:
 - Spring Boot 3.5.4
 - Gradle
 - Jackson (JSON 처리)
+
+## 클로드 챗 연동(For Mac)
+
+```shell
+vi ~/Library/Application\ Support/Claude/claude_desktop_config.json
+```
+
+```shell
+{
+  "mcpServers": {
+    "coinone-mcp": {
+      "command": "java",
+      "args": [
+        "-Xmx1G",
+        "-Dspring.main.banner-mode=off",
+        "-Dlogging.level.root=ERROR",
+        "-Dlogging.pattern.console=",
+        "-jar",
+        "/Users/xeroman.k/Library/Application Support/Claude/coinone-mcp-0.0.1.jar",
+        "--mcp.server.enabled=true",
+        "--spring.main.web-application-type=none"
+      ],
+      "env": {}
+    }
+  }
+}
+
+
+```
