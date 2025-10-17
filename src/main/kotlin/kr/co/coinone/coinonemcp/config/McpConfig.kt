@@ -24,4 +24,10 @@ class McpConfig {
 
     @Bean
     fun getChartTool() = GetChartTool()
+
+    @Bean
+    fun getBybitChartTool() = GetBybitChartTool()
+
+    @Bean
+    fun getBybitRsiTool() = GetBybitRsiTool()
 }

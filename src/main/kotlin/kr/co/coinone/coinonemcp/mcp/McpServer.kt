@@ -32,6 +32,12 @@ class McpServer : CommandLineRunner {
     @Autowired
     private lateinit var getChartTool: GetChartTool
 
+    @Autowired
+    private lateinit var getBybitChartTool: GetBybitChartTool
+
+    @Autowired
+    private lateinit var getBybitRsiTool: GetBybitRsiTool
+
     private val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
 
     override fun run(vararg args: String?) {
@@ -204,6 +210,85 @@ class McpServer : CommandLineRunner {
                     ),
                     "required" to listOf("targetCurrency")
                 )
+            ),
+            mapOf(
+                "name" to "get_bybit_chart",
+                "description" to "Get Kline/candlestick data from Bybit exchange",
+                "inputSchema" to mapOf(
+                    "type" to "object",
+                    "properties" to mapOf(
+                        "symbol" to mapOf(
+                            "type" to "string",
+                            "description" to "Trading pair symbol (e.g., BTCUSDT, ETHUSDT)"
+                        ),
+                        "category" to mapOf(
+                            "type" to "string",
+                            "default" to "linear",
+                            "description" to "Product type (spot, linear, inverse)"
+                        ),
+                        "interval" to mapOf(
+                            "type" to "string",
+                            "default" to "1",
+                            "description" to "Kline interval (1, 3, 5, 15, 30, 60, 120, 240, 360, 720, D, W, M)"
+                        ),
+                        "start" to mapOf(
+                            "type" to "number",
+                            "description" to "Start timestamp in milliseconds (optional)"
+                        ),
+                        "end" to mapOf(
+                            "type" to "number",
+                            "description" to "End timestamp in milliseconds (optional)"
+                        ),
+                        "limit" to mapOf(
+                            "type" to "number",
+                            "default" to 200,
+                            "description" to "Data size per page (1-1000, default: 200)"
+                        )
+                    ),
+                    "required" to listOf("symbol")
+                )
+            ),
+            mapOf(
+                "name" to "get_bybit_rsi",
+                "description" to "Calculate RSI (Relative Strength Index) from Bybit Kline data",
+                "inputSchema" to mapOf(
+                    "type" to "object",
+                    "properties" to mapOf(
+                        "symbol" to mapOf(
+                            "type" to "string",
+                            "description" to "Trading pair symbol (e.g., BTCUSDT, ETHUSDT)"
+                        ),
+                        "category" to mapOf(
+                            "type" to "string",
+                            "default" to "linear",
+                            "description" to "Product type (spot, linear, inverse)"
+                        ),
+                        "interval" to mapOf(
+                            "type" to "string",
+                            "default" to "1",
+                            "description" to "Kline interval for RSI calculation"
+                        ),
+                        "rsiPeriod" to mapOf(
+                            "type" to "number",
+                            "default" to 14,
+                            "description" to "RSI calculation period (default: 14)"
+                        ),
+                        "start" to mapOf(
+                            "type" to "number",
+                            "description" to "Start timestamp in milliseconds (optional)"
+                        ),
+                        "end" to mapOf(
+                            "type" to "number",
+                            "description" to "End timestamp in milliseconds (optional)"
+                        ),
+                        "limit" to mapOf(
+                            "type" to "number",
+                            "default" to 50,
+                            "description" to "Number of candles to return with RSI values (default: 50)"
+                        )
+                    ),
+                    "required" to listOf("symbol")
+                )
             )
         )
 
@@ -268,6 +353,31 @@ class McpServer : CommandLineRunner {
                         endTime = (arguments["endTime"] as? Number)?.toLong()
                     )
                     getChartTool.apply(request)
+                }
+
+                "get_bybit_chart" -> {
+                    val request = GetBybitChartRequest(
+                        symbol = arguments["symbol"] as String,
+                        category = arguments["category"] as? String ?: "linear",
+                        interval = arguments["interval"] as? String ?: "1",
+                        start = (arguments["start"] as? Number)?.toLong(),
+                        end = (arguments["end"] as? Number)?.toLong(),
+                        limit = (arguments["limit"] as? Number)?.toInt() ?: 200
+                    )
+                    getBybitChartTool.apply(request)
+                }
+
+                "get_bybit_rsi" -> {
+                    val request = GetBybitRsiRequest(
+                        symbol = arguments["symbol"] as String,
+                        category = arguments["category"] as? String ?: "linear",
+                        interval = arguments["interval"] as? String ?: "1",
+                        rsiPeriod = (arguments["rsiPeriod"] as? Number)?.toInt() ?: 14,
+                        start = (arguments["start"] as? Number)?.toLong(),
+                        end = (arguments["end"] as? Number)?.toLong(),
+                        limit = (arguments["limit"] as? Number)?.toInt() ?: 50
+                    )
+                    getBybitRsiTool.apply(request)
                 }
 
                 else -> throw IllegalArgumentException("Unknown tool: $toolName")
